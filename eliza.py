@@ -73,9 +73,13 @@ while True:
         eliza_resp = generate_default_response()
     else:
         words = tokens.group(len(tokens.groups())).lower().split()
-        for word in words:
+        for i, word in enumerate(words):
             if word in pronouns:
-                word = pronouns[word]
+                words[i] = pronouns[word]
+
+        component = " ".join(words)
+
+        print(eliza_resp.replace("{}", component))
 
     # "bye" ends conversation
     if re.search(r'\b(bye)\b', response.lower()):
