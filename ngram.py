@@ -13,6 +13,7 @@ Algorithm:
 
 """
 
+import os
 import re
 import random
 import sys
@@ -30,6 +31,16 @@ for i in range(1, len(sys.argv)):
         text_files.append(sys.argv[i])
 
 print(num_for_gram, num_of_sentences, text_files)
+
+for txt_file in text_files:
+    with open(txt_file, "r", encoding="utf8") as file:
+        content = file.read().lower()
+
+    content = re.sub(r'[,*\-_;:()"]', ' ', content)
+    content = re.sub(r'[.!?]', '.', content)
+    content = re.sub(r'\s+', ' ', content)
+
+    print(content)
 
 
 
