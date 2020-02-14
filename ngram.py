@@ -39,35 +39,42 @@ for txt_file in text_files:
     with open(txt_file, "r", encoding="utf-8-sig") as file:
         content = file.read().lower()
 
+    start_tags = ""
+    for _ in range(1, num_for_gram):
+        start_tags += "<s> "
+
     content = re.sub(r'[,*\-_;:()"]', ' ', content)
+
+    content = start_tags + content
     content = re.sub(r'[.!?]', ' .', content)
+    edit = content.split(".")
+    end_start_tags = ". " + start_tags
+    content = end_start_tags.join(map(str, edit))
+
     content = re.sub(r'\s+', ' ', content)
 
     tokens = content.split()
 
-    for i in range(0, 2000):
-        print(i)
-        if i == 0 or tokens[i-1] == ".":
-            for j in range(1, num_for_gram):
-                ngram.append("<s>")
+    index = 0
+    while index < 100:
+        ngram.append(tokens[index])
 
-            word = tokens[i]
+        if len(ngram) == num_for_gram:
+            word = ngram.pop()
             key = " ".join(map(str, ngram))
 
             if key in history.keys():
                 if word in history[key]:
                     history[key][word] += 1
-                    print("here")
                 else:
                     history[key][word] = 1
-                    print("no here")
             else:
                 history[key] = {word: 1}
-                print("no no here")
 
-            print(history)
-
+            index -= (num_for_gram - 2)
             ngram.clear()
+        else:
+            index += 1
 
 
 
