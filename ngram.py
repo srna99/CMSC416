@@ -18,9 +18,10 @@ import re
 import sys
 
 ngram_dict = {}
-probabilities = {}
+history_freq_dict = {}
 tokens = []
 ngram = []
+sentences = []
 
 num_for_gram = 0
 num_of_sentences = 0
@@ -34,8 +35,6 @@ for i in range(1, len(sys.argv)):
     else:
         text_files.append(sys.argv[i])
 
-print(num_for_gram, num_of_sentences, text_files)
-
 for txt_file in text_files:
     with open(txt_file, "r", encoding="utf-8-sig") as file:
         content = file.read().lower()
@@ -44,7 +43,7 @@ for txt_file in text_files:
     for _ in range(1, num_for_gram):
         start_tags += "<s> "
 
-    content = re.sub(r'[,*\-_;:()\"]', ' ', content)
+    content = re.sub(r'[,*\-_;:()\'\"]', ' ', content)
 
     content = start_tags + content
     content = re.sub(r'[.!?]', ' .', content)
@@ -79,18 +78,44 @@ while index < len(tokens):
         index += 1
 
 for history, word_dict in ngram_dict.items():
-    n_minus_1_freq = sum(word_dict.values())
+    history_freq_dict[history] = sum(word_dict.values())
 
-    for word, n_freq in word_dict.items():
-        probability = round(n_freq / n_minus_1_freq, 10)
+ngram.clear()
+sentence_count = 0
+index = 0
+while sentence_count != num_of_sentences:
+    if len(sentences) == 0:
+        begin_tag = ""
+        for _ in range(1, num_for_gram):
+            begin_tag += "<s> "
 
-        if history in probabilities.keys():
-            probabilities[history][word] = probability
-        else:
-            probabilities[history] = {word: probability}
+        sentences.extend(begin_tag.split())
+        ngram.extend(sentences)
 
-# print(ngram_dict)
-# print(probabilities)
+        index += (len(sentences) - 1)
+
+    history = " ".join(map(str, ngram))
+
+    possible_words = []
+    probabilities = []
+
+    for k, v in ngram_dict[history].items():
+        possible_words.append(k)
+
+        probability = round(v / history_freq_dict[history], 10)
+        probabilities.append(probability)
+
+    selected_word = random.choices(possible_words, probabilities)
+    selected_word = re.sub(r'[\[\]\'\"]', '', str(selected_word))
+
+    if selected_word == "<e>":
+        sentence_count += 1
+
+    sentences.append(selected_word)
+    ngram.append(selected_word)
+    ngram.pop(0)
+
+    index += 1
 
 
 
